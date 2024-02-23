@@ -57,6 +57,61 @@ flavorizr:
 xcodeでもフレーバの設定を自動追加できる
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/9a4cc80c-798d-4a36-8b1a-3407c1b3548e)
 
+# release設定
+## アップロードkeyの準備
+
+### プロジェクトファイルの andoroi/app で以下のコマンドを実行し証明書を作成する
+alias_nameは覚えやすい名前にする
+
+```sh
+keytool -genkey -v -keystore release.jks -alias alias_name -keyalg RSA -keysize 2048 -validity 10000
+```
+
+### github actionの環境変数で使うためエンコードしておく
+```sh
+ openssl base64 -in release.jks  -out release.pem 
+```
+
+### android/keystore.propertiesを作成（local用）
+```sh
+storePassword=パスワード
+keyPassword=パスワード
+keyAlias=alias_name
+storeFile=release.jks
+```
+
+### android/app/build.gradeの編集
+```sh
+// android 設定の上
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+android {
+....
+// defalutConfigの下
+signingConfigs {
+        release {
+            if (System.getenv("GITHUB_ACTIONS")) { // gitaction用
+                storeFile file("release.jks")
+                storePassword System.getenv()["STORE_PASSWORD"]
+                keyAlias System.getenv()["KEY_ALIAS"]
+                keyPassword System.getenv()["KEY_PASSWORD"]
+            } else if (keystorePropertiesFile.exists()) { // local用
+                def keystoreProperties = new Properties()
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
+....
+// この中に releaseの追加
+buildTypes {
+        release {
+            signingConfig signingConfigs.release
+
+```
 
 
 ## fastlane設定
@@ -65,25 +120,30 @@ xcodeでもフレーバの設定を自動追加できる
  ruby --version
 ```
 
+
 ### プロジェクトでのrubyのバージョンを固定する
 ```sh
 rbenv local 3.3.0(上記ver)
 ```
+
 
 ### Flutter プロジェクト直下で以下を実行し bundler をインストール
 ```sh
 gem install bundler
 ```
 
+
 ### Gemfile を作成
 ```sh
 bundle init
 ```
 
+
 ### 作成された Gemfile の一番下に以下を追加して fastlane を明記
 ```sh
 gem 'fastlane'
 ```
+
 
 ### 以下コマンドで fastlane のインストール
 ```sh
@@ -92,6 +152,7 @@ bundle install
 bundle package
 bundle install --local
 ```
+
 
 ### android　ディレクトリに移動して以下のコマンドを実行し、fastlaneディレクトリが作成されていることを確認する
 ```sh
@@ -133,8 +194,19 @@ platform :android do
       target: "lib/main_production.dart"
     )
   end
+# Google Devloperの 内部テストへのアップロード
+  desc "upload_to_play_store"
+    lane :upload_production do
+      upload_to_play_store(
+        track: 'internal',
+        release_status: 'draft',
+        package_name: "com.YOURTEAMNAME.fastlane.flavor.prods",
+        track: "internal",
+        aab: "../build/app/outputs/bundle/productionRelease/app-production-release.aab"
+      )
+  end
 
-#　毎回buildファイルを更新してくれる
+# buildファイルの作り直し
 # Build the above with -- to specify flavor　
   desc "common build"
   private_lane :flutter_build do |options|
@@ -167,7 +239,7 @@ https://docs.fastlane.tools/actions/supply/
 以下より jsonファイルをダウンロードする
 
 
-##以下のコマンドで成功と出たら上記のjsonでgoogle storeとのコネクトが可能になるのでプロジェクトに埋め込んでいく
+以下のコマンドで成功と出たら上記のjsonでgoogle storeとのコネクトが可能になるのでプロジェクトに埋め込んでいく
 ```sh
 fastlane run validate_play_store_json_key json_key:/path/to/your/downloaded/file.json
 ```
@@ -194,9 +266,6 @@ package_name(ENV["PACKAGE_NAME"])
 fastlane supply init
 ```
 
-### Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
-<img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
-
 
 ### 以下コマンドを実行
 ```sh
@@ -211,11 +280,28 @@ def latest_version(track)
      + latest_version = tracks.select { |t| t.track == Supply::Tracks::DEFAULT }.map(&:releases).flatten.reject { |r| (r&.name).nil? }.max_by(&:name)
 
 ```
+### aab ファイルの作成
+```sh
+bundle exec fastlane production
+```
+
+### 一度手動でGoogle Developerにアップロード
+
+### Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
+<img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
 
 
+### ver 変更して自動デプロイ
+pubspec.yamlのアプリバージョンを上げる
+```sh
+version: 1.0.0+2
+```
 
-
-
+### ・　内部テストへアップロード
+```sh
+bundle exec fastlane upload_production
+```
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/8bf834ea-93a3-4391-beee-f07a7208c565)
 
 
 

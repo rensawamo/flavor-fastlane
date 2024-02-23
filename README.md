@@ -168,6 +168,7 @@ default_platform(:android)
 
 platform :android do
 
+#  内部テスト
   desc "development build apk and aab"
   lane :development do
     flutter_build(
@@ -176,7 +177,18 @@ platform :android do
       target: "lib/main_development.dart"
     )
   end
+  desc "upload_to_play_store"
+      lane :upload_production do
+        upload_to_play_inside(
+          track: 'internal',
+          release_status: 'draft',
+          package_name: "com.YOURNAME.fastlane.flavor.dev",
+          track: "internal",
+          aab: "../build/app/outputs/bundle/productionRelease/app-development-release.aab"
+        )
+    end
 
+#  オープンテスト
   desc "staging build apk and aab"
   lane :staging do
     flutter_build(
@@ -185,7 +197,18 @@ platform :android do
       target: "lib/main_staging.dart"
     )
   end
+  desc "upload_to_upload_open_test"
+  lane :upload_open_test do
+    upload_to_play_store(
+      track: 'open',
+      release_status: 'completed',
+      package_name: "com.YOURNAME.fastlane.flavor.staging",
+      track: "internal",
+      aab: "../build/app/outputs/bundle/stagingRelease/app-staging-release.aab"
+  )
+  end
 
+#  本番
   desc "production build apk and aab"
   lane :production do
     flutter_build(
@@ -194,19 +217,18 @@ platform :android do
       target: "lib/main_production.dart"
     )
   end
-# Google Devloperの 内部テストへのアップロード
-  desc "upload_to_play_store"
-    lane :upload_production do
-      upload_to_play_store(
-        track: 'internal',
-        release_status: 'draft',
-        package_name: "com.YOURTEAMNAME.fastlane.flavor.prods",
-        track: "internal",
-        aab: "../build/app/outputs/bundle/productionRelease/app-production-release.aab"
-      )
+  desc "Upload to Play Store"
+  lane :upload_production do
+    upload_to_play_store(
+      track: 'production',
+      release_status: 'completed',
+      package_name: "com.YOURNAME.fastlane.flavor.prod",
+      aab: "../build/app/outputs/bundle/productionRelease/app-production-release.aab"
+    )
   end
 
-# buildファイルの作り直し
+
+
 # Build the above with -- to specify flavor　
   desc "common build"
   private_lane :flutter_build do |options|
@@ -221,7 +243,7 @@ platform :android do
 end
 ```
 
-### productioをビルドしてみる
+### production をビルドしてみる
 ```sh
 bundle exec fastlane production
 ```
@@ -282,10 +304,10 @@ def latest_version(track)
 ```
 ### aab ファイルの作成
 ```sh
-bundle exec fastlane production
+bundle exec fastlane development
 ```
 
-### 一度手動でGoogle Developerにアップロード
+### 一度手動でGoogle Developerにアップロード(内部テストへ)
 
 ### Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
 <img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
@@ -299,11 +321,12 @@ version: 1.0.0+2
 
 ### ・　内部テストへアップロード
 ```sh
-bundle exec fastlane upload_production
+bundle exec fastlane upload_to_inside
 ```
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/8bf834ea-93a3-4391-beee-f07a7208c565)
 
 
+上記flavorでアップロード先を適宜分けることが可能
 
 
 

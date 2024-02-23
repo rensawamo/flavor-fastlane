@@ -134,7 +134,7 @@ platform :android do
     )
   end
 
-
+#　毎回buildファイルを更新してくれる
 # Build the above with -- to specify flavor　
   desc "common build"
   private_lane :flutter_build do |options|
@@ -159,6 +159,61 @@ bundle exec fastlane production
 
 ### ルートディレクトリ　に aabファイルと apkができていることを確認する
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/56351c3a-aea5-40e9-9971-405fbbb95c5d)
+
+
+# fastlane アップロード
+## jsonの作成
+https://docs.fastlane.tools/actions/supply/
+以下より jsonファイルをダウンロードする
+
+
+##以下のコマンドで成功と出たら上記のjsonでgoogle storeとのコネクトが可能になるのでプロジェクトに埋め込んでいく
+```sh
+fastlane run validate_play_store_json_key json_key:/path/to/your/downloaded/file.json
+```
+
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/7858610b-889c-4779-8966-bcb383eac4e4)
+
+
+### 環境変数の設定
+.envを作成
+```sh
+PLAY_STORE_CREDENTIALS_JSON_PATH="path/to/your/play-store-credentials.json"
+PACKAGE_NAME="my.package.name"
+```
+
+### Appfileを書き換える
+```sh
+json_key_file(ENV["PLAY_STORE_CREDENTIALS_JSON_PATH"])
+package_name(ENV["PACKAGE_NAME"])
+```
+
+
+### 以下を実行し　プロジェクトと GooglePlayStoreを紐付ける
+```sh
+fastlane supply init
+```
+
+### Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
+<img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
+
+
+### 以下コマンドを実行
+```sh
+fastlane supply init
+```
+
+エラーの場合は
+supply/lib/supply/client.rbを変更
+```sh
+def latest_version(track)
+     - latest_version = tracks.select { |t| t.track == Supply::Tracks::DEFAULT }.map(&:releases).flatten.reject { |r| r.name.nil? }.max_by(&:name)
+     + latest_version = tracks.select { |t| t.track == Supply::Tracks::DEFAULT }.map(&:releases).flatten.reject { |r| (r&.name).nil? }.max_by(&:name)
+
+```
+
+
+
 
 
 

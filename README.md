@@ -1,16 +1,61 @@
-# flavor_fastlane
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/59dd5ebd-b030-4d48-9b05-392e9e14679b)# flavorを使って development と  staging と　 productionの配布をテスターに配布できるようにする
 
-A new Flutter project.
+## fvnを使用
+```sh
+fvm list
+fvm use 上記ver
+```
 
-## Getting Started
+## pubspec.yaml の dev_dependencies に以下を追記しプロジェクトに追加
+```sh
+flutter_flavorizr:
+```
 
-This project is a starting point for a Flutter application.
+## pubspec.yamlの下に以下を追加
+```sh
+flavorizr:
+  app:
+    android:
+      flavorDimensions: "flavor-type"
 
-A few resources to get you started if this is your first Flutter project:
+  flavors:
+    development:
+      app:
+        name: "Development"
+      android:
+        applicationId: "com.YOURTEAMNAME.fastlane.flavor.dev"
+      ios:
+        bundleId: "com.YOURTEAMNAME.fastlaneFlavor.dev"
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+    staging:
+      app:
+        name: "Staging"
+      android:
+        applicationId: "com.YOURTEAMNAME.fastlane.flavor.staging"
+      ios:
+        bundleId: "com.YOURTEAMNAME.fastlaneFlavor.staging"
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+    production:
+      app:
+        name: "Production"
+      android:
+        applicationId: "com.YOURTEAMNAME.fastlane.flavor.prod"
+      ios:
+        bundleId: "com.YOURTEAMNAME.fastlaneFlavor.prod"
+```
+
+以下コマンドを実行
+```sh
+ flutter pub run flutter_flavorizr
+```
+
+
+## 各フレーバーのビルド設定を行う
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/92f8523a-9e82-4560-af20-9000545e1140)
+
+このライブラリの使用により
+xcodeでもフレーバの設定を自動追加できる
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/9a4cc80c-798d-4a36-8b1a-3407c1b3548e)
+
+
+

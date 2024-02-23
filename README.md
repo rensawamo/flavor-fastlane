@@ -170,7 +170,7 @@ default_platform(:android)
 
 platform :android do
 
-#  内部テスト
+#　内部テスト
   desc "development build apk and aab"
   lane :development do
     flutter_build(
@@ -250,7 +250,6 @@ end
 bundle exec fastlane production
 ```
 
-![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/a8b205f2-8abd-4e0a-9167-18f58fb29b9b)
 
 
 ### ルートディレクトリ　に aabファイルと apkができていることを確認する
@@ -305,8 +304,7 @@ bundle exec fastlane development
 ```
 
 ### 一度手動でGoogle Developerにアップロード(内部テストへ)
-
-### Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
+Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
 <img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
 
 
@@ -316,7 +314,7 @@ pubspec.yamlのアプリバージョンを上げる
 version: 1.0.0+2
 ```
 
-### ・　内部テストへアップロード
+### 内部テストへアップロード
 ```sh
 bundle exec fastlane upload_to_inside
 ```
@@ -334,8 +332,6 @@ bundle exec fastlane init
 
 ### Falslaneのファイルを以下に修正
 ```sh
- # matchの他のパラメータについてはDocs参照。https://docs.fastlane.tools/actions/match/
- # ××××：development or appstore or adhoc
  
  default_platform(:ios)
 #     開発用

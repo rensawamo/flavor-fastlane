@@ -1,4 +1,4 @@
-# flavorを使って development と  staging と　 productionの配布をテスターに配布できるようにする
+# flavorを使って development と  staging と　 productionの配布を分岐配布できるようにする
 
 ### fvnを使用
 ```sh
@@ -57,6 +57,8 @@ flavorizr:
 xcodeでもフレーバの設定を自動追加できる
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/9a4cc80c-798d-4a36-8b1a-3407c1b3548e)
 
+
+# Android 
 # release設定
 ## アップロードkeyの準備
 
@@ -289,11 +291,6 @@ fastlane supply init
 ```
 
 
-### 以下コマンドを実行
-```sh
-fastlane supply init
-```
-
 エラーの場合は
 supply/lib/supply/client.rbを変更
 ```sh
@@ -322,6 +319,83 @@ version: 1.0.0+2
 ### ・　内部テストへアップロード
 ```sh
 bundle exec fastlane upload_to_inside
+```
+
+
+# iOS
+matchを使用。
+githubに本来は情報を格納（このリポジトリにはしていないプライベートにする）
+
+## iOSのディレクトリに移動
+```sh
+cd ios
+bundle exec fastlane init
+```
+
+### Falslaneのファイルを以下に修正
+```sh
+ # matchの他のパラメータについてはDocs参照。https://docs.fastlane.tools/actions/match/
+ # ××××：development or appstore or adhoc
+ 
+ default_platform(:ios)
+#     開発用
+ platform :ios do
+   desc "Fetch Certificate and Profile for Development"
+     lane :fetch_dev_cert_and_profile do
+       match(
+         type: "development",
+         app_identifier: "com.YOURNAME.fastlaneFlavor.dev",
+         readonly: true
+       )
+     end
+
+     # ステージング環境用
+     desc "Fetch Certificate and Profile for Staging"
+     lane :fetch_staging_cert_and_profile do
+       match(
+         type: "adhoc",
+         app_identifier: "com.YOURNAME.fastlaneFlavor.staging",
+         readonly: true
+       )
+     end
+
+     # 本番環境用
+     desc "Fetch Certificate and Profile for Production"
+     lane :fetch_prod_cert_and_profile do
+       match(
+         type: "appstore",
+         app_identifier: "com.YOURNAME.fastlaneFlavor.prod",
+         readonly: true
+       )
+     end
+ end
+
+```
+
+### App Store Connect API Key 作成
+apple store connect　の　以下ページの
+Issuer ID、キーID、ダウンロードp8を準備
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/33d4875d-eadd-4563-898d-ba3acb803c97)
+
+.envに情報を入れ込む
+```sh
+# Fastfile
+ KEY_ID = "<App Store Connect：キーID>"
+ ISSUER_ID = "<App Store Connect: Issuer ID>"
+ KEY_FILEPATH = "<p8ファイルの格納Path>"
+```
+
+以下コマンドを実行し、gitを選択
+```sh
+fastlane match init
+```
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/72a1f1b1-b4cd-43c6-8d96-448053aff15c)
+
+
+以下でflavorを使ったデプロイが可能になる
+例えば本番環境
+```sh
+fastlane ios fetch_prod_cert_and_profile
 ```
 
 

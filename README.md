@@ -323,7 +323,7 @@ version: 1.0.0+2
 ```sh
 bundle exec fastlane upload_to_inside
 ```
-![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/8bf834ea-93a3-4391-beee-f07a7208c565)
+
 
 
 上記flavorでアップロード先を適宜分けることが可能

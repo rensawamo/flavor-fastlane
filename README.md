@@ -57,6 +57,7 @@ flavorizr:
 xcodeでもフレーバの設定を自動追加できる
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/9a4cc80c-798d-4a36-8b1a-3407c1b3548e)
 
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/eb300f33-cc11-46a1-8a03-ccea889d7e30)
 
 # Android 
 # release設定

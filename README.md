@@ -306,6 +306,10 @@ bundle exec fastlane development
 
 ### 一度手動でGoogle Developerにアップロード(内部テストへ)
 Google play console の内部テストに出来上がった build/app/outputs/bundle/productionRelease/app-production-release.aabをドラッグドロップ
+
+
+
+
 <img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
 
 
@@ -335,37 +339,81 @@ bundle exec fastlane init
 ```sh
  
  default_platform(:ios)
-#     開発用
- platform :ios do
-   desc "Fetch Certificate and Profile for Development"
-     lane :fetch_dev_cert_and_profile do
-       match(
-         type: "development",
-         app_identifier: "com.YOURNAME.fastlaneFlavor.dev",
-         readonly: true
-       )
-     end
+platform :ios do
 
-     # ステージング環境用
-     desc "Fetch Certificate and Profile for Staging"
-     lane :fetch_staging_cert_and_profile do
-       match(
-         type: "adhoc",
-         app_identifier: "com.YOURNAME.fastlaneFlavor.staging",
-         readonly: true
-       )
-     end
+# developmentを省略
 
-     # 本番環境用
-     desc "Fetch Certificate and Profile for Production"
-     lane :fetch_prod_cert_and_profile do
-       match(
-         type: "appstore",
-         app_identifier: "com.YOURNAME.fastlaneFlavor.prod",
-         readonly: true
-       )
-     end
- end
+  desc "テストフライトへ"
+  lane :testflight_fetch_cert_and_profile do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["KEY_ID"],
+      issuer_id: ENV["ISSUER_ID"],
+      key_filepath: ENV["KEY_FILEPATH"],
+      duration: 1200,
+      in_house: false
+    )
+    match(
+      api_key: api_key,
+      type: "appstore",
+      app_identifier: ["com.YOURTEAMNAME.fastlaneFlavor.staging"],
+      force_for_new_devices: true
+    )
+    # match を使用している場合でも証明書の更新は行わずに、リポジトリからの取得のみを行う
+    match(type: "appstore", readonly: true)
+    gym(
+      scheme: "staging",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.YOURTEAMNAME.flavorFastlane.staging" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.staging"
+        }
+      }
+    )
+    # TestFlightにアプリをアップロード
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true, # ビルド処理の完了を待たない
+      skip_submission: true # ビルドのレビュー提出をスキップ
+    )
+  end
+
+  desc "本願環境へ"
+  lane :appstore_prod_cert_and_profile do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["KEY_ID"],
+      issuer_id: ENV["ISSUER_ID"],
+      key_filepath: ENV["KEY_FILEPATH"],
+      duration: 1200,
+      in_house: false
+    )
+    match(
+      api_key: api_key,
+      type: "appstore",
+      app_identifier: ["com.YOURTEAMNAME.fastlaneFlavor.prod"],
+      force_for_new_devices: true
+    )
+    # match を使用している場合でも証明書の更新は行わずに、リポジトリからの取得のみを行う
+    match(type: "appstore", readonly: true)
+
+    gym(
+      scheme: "production",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.YOURTEAMNAME.flavorFastlane.prod" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.prod"
+        }
+      }
+    )
+    # App Store Connectにアプリをアップロード
+    upload_to_app_store(
+      api_key: api_key,
+      skip_metadata: true,
+      skip_screenshots: true,
+      skip_binary_upload: false
+    )
+  end
+end
+
 
 ```
 
@@ -373,6 +421,13 @@ bundle exec fastlane init
 apple store connect　の　以下ページの
 Issuer ID、キーID、ダウンロードp8を準備
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/33d4875d-eadd-4563-898d-ba3acb803c97)
+
+この時、権限を以下に設定
+
+
+
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/e64d5f4b-c8ab-43ac-a75d-0d1c28b3ace6)
+
 
 .envに情報を入れ込む
 ```sh
@@ -382,19 +437,45 @@ Issuer ID、キーID、ダウンロードp8を準備
  KEY_FILEPATH = "<p8ファイルの格納Path>"
 ```
 
-以下コマンドを実行し、gitを選択
+以下コマンドを実行し、gitを選択しリポジトリに証明書などを埋め込む。
+
 ```sh
 fastlane match init
 ```
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/72a1f1b1-b4cd-43c6-8d96-448053aff15c)
 
 
-以下でflavorを使ったデプロイが可能になる
-例えば本番環境
+
+これにより、チームメンバーは以下のコマンドより証明書を取得可能
 ```sh
-fastlane ios fetch_prod_cert_and_profile
+fastlane match appstore(development)
 ```
 
+[Apple Developer Program](https://developer.apple.com/programs/)へ移動し、Identifiersを
+com.YOURTEAMNAME.fastlaneFlavor.staging(flavor)（３種類）作成してapple connect へ移動し、アプリの登録をおこなう
+
+
+以下でflavorを使ったデプロイが可能になる
+例えば本番環境
+
+```sh
+fastlane ios testflight_fetch_cert_and_profile(lane名今回はtestflightへ)
+```
+<img width="543" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/73989371-e0a8-4df5-bf15-8edb40d885e2">
+
+![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/1c8724a6-955d-41e0-a4f2-4d5db280767c)
+
+
+
+以下のように、
+
+developmentでは 内部テストへ
+
+
+stagingではテストフライト、
+
+
+productionでは本番へというように環境を変えた配信を行える
 
 
 上記flavorでアップロード先を適宜分けることが可能

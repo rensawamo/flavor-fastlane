@@ -1,5 +1,4 @@
-# flavorを使って development と  staging と　 productionの配布を分岐配布できるようにする
-
+# flavor(flutter_flavorizr)とfastlaneをつかった　iOS と　anoroidの　自動配布
 ### fvnを使用
 ```sh
 fvm list

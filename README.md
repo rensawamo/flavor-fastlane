@@ -364,7 +364,7 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.YOURTEAMNAME.flavorFastlane.staging" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.staging"
+          "com.YOURTEAMNAME.flavorFastlane" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.staging"
         }
       }
     )
@@ -399,7 +399,7 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.YOURTEAMNAME.flavorFastlane.prod" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.prod"
+          "com.YOURTEAMNAME.flavorFastlane" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.prod"
         }
       }
     )

@@ -180,7 +180,7 @@ platform :android do
     )
   end
   desc "upload_to_play_store"
-      lane :upload_production do
+      lane :upload_inside do
         upload_to_play_inside(
           track: 'internal',
           release_status: 'draft',
@@ -220,7 +220,7 @@ platform :android do
     )
   end
   desc "Upload to Play Store"
-  lane :upload_production do
+  lane :upload_production_to_play_store do
     upload_to_play_store(
       track: 'production',
       release_status: 'completed',

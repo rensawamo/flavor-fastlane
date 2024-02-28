@@ -308,7 +308,6 @@ Google play console の内部テストに出来上がった build/app/outputs/bu
 
 
 
-
 <img width="884" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/9cc776ec-6f30-4f97-9688-9e0d8e56b770">
 
 
@@ -342,8 +341,11 @@ platform :ios do
 
 # developmentを省略
 
+  default_platform(:ios)
+platform :ios do
+
   desc "テストフライトへ"
-  lane :testflight_fetch_cert_and_profile do
+  lane :staging_upto_appstore do
     api_key = app_store_connect_api_key(
       key_id: ENV["KEY_ID"],
       issuer_id: ENV["ISSUER_ID"],
@@ -364,11 +366,11 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.YOURTEAMNAME.flavorFastlane" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.staging"
+          "com.YOURTEAMNAME.flavorFastlane.staging" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.staging"
         }
       }
     )
-    # TestFlightにアプリをアップロード
+    # ベータ版をappstoreへアップロード
     upload_to_testflight(
       api_key: api_key,
       skip_waiting_for_build_processing: true, # ビルド処理の完了を待たない
@@ -376,8 +378,8 @@ platform :ios do
     )
   end
 
-  desc "本願環境へ"
-  lane :appstore_prod_cert_and_profile do
+  desc "本番環境へ"
+  lane :prod_upto_appstore do
     api_key = app_store_connect_api_key(
       key_id: ENV["KEY_ID"],
       issuer_id: ENV["ISSUER_ID"],
@@ -399,12 +401,13 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.YOURTEAMNAME.flavorFastlane" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.prod"
+          "com.YOURTEAMNAME.flavorFastlane.prod" => "match AppStore com.YOURTEAMNAME.fastlaneFlavor.prod"
         }
       }
     )
-    # App Store Connectにアプリをアップロード
+    # 本番製品をappstoreへアップロード
     upload_to_app_store(
+      precheck_include_in_app_purchases: false,
       api_key: api_key,
       skip_metadata: true,
       skip_screenshots: true,
@@ -458,12 +461,14 @@ com.YOURTEAMNAME.fastlaneFlavor.staging(flavor)（３種類）作成してapple 
 例えば本番環境
 
 ```sh
-fastlane ios testflight_fetch_cert_and_profile(lane名今回はtestflightへ)
+fastlane ios prod_upto_appstore
 ```
+appstoreにアップロード
 <img width="543" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/73989371-e0a8-4df5-bf15-8edb40d885e2">
 
 ![image](https://github.com/rensawamo/flavor-fastlane/assets/106803080/1c8724a6-955d-41e0-a4f2-4d5db280767c)
-
+（再度コマンド実行したらバージョンが上がる）
+<img width="856" alt="image" src="https://github.com/rensawamo/flavor-fastlane/assets/106803080/ddb52223-2e85-4049-9c13-ad0cc42a5705">
 
 
 以下のように、

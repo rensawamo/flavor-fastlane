@@ -11,6 +11,7 @@ flutter_flavorizr:
 ```
 
 ### pubspec.yamlの下に以下を追加
+最近は dart defineに乗り換えているそちらを推奨
 ```sh
 flavorizr:
   app:
@@ -62,7 +63,7 @@ xcodeでもフレーバの設定を自動追加できる
 # release設定
 ## アップロードkeyの準備
 
-### プロジェクトファイルの andoroi/app で以下のコマンドを実行し証明書を作成する
+### プロジェクトファイルの andoroid/app で以下のコマンドを実行し証明書を作成する
 alias_nameは覚えやすい名前にする
 
 ```sh
